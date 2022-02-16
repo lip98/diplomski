@@ -1,0 +1,240 @@
+\documentclass[times, utf8, diplomski]{fer}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\begin{document}
+
+% TODO: Navedite broj rada.
+\thesisnumber{2301}
+
+% TODO: Navedite naslov rada.
+\title{Generiranje i prikaz modela morskog dna fuzijom telemetrijskih podataka sa podacima višezrakastog sonara}
+
+% TODO: Navedite vaše ime i prezime.
+\author{Luka Pržić}
+\maketitle
+% Ispis stranice s napomenom o umetanju izvornika rada. Uklonite naredbu \izvornik ako želite izbaciti tu stranicu.
+\izvornik
+
+% Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
+\zahvala{}
+
+\tableofcontents
+\chapter{Uvod}
+Tijekom proteklog desetljeća znatno se povećao intenzitet istraživanja u području autonomnih podvodnih vozila (engl. \textit{autonomous underwater vehicles}) motiviran prvenstveno nastojanjem sigurnijeg proučavanja morskih predjela povlačenjem ljudskih resursa sa istih, zamjenjujući ih sa relativno jeftinijom opcijom koja pruža mogućnost samostalnih operacija bez fizičkih veza s površinskim plovilima ili potrebe za ljudskim nadgledanjem. Međutim, autonomnost ovakvih vozila dolazi sa brojnim izazovima kao što su uspostavljanje pouzdane navigacije i lokalizacije, uzimajući u obzir da su precizna mjerenja dobivena globalnim pozicijskim sustavom (engl. \textit{global positioning system}) koja se većinom koriste u raznim aplikacijama na kopnu, nedostupna u podvodnim uvjetima u kojima je prigušenje signala vrlo izraženo. Kao jedno od mogućih rješenja za navedeni problem jest korištenje fuzije različitih senzora, primjerice sonara s različitim odometrijskim sustavima koji u kombinaciji povećavaju pouzdanost mjerernja pri radu na većim dubinama, koja se doduše mogu korigirati vraćanjem plovila na površinu i spajanjem na precizniji globalni pozicijski sustav. Prilikom upravljanja vozilima vrlo često se korisne informacije dobivaju prikupljanjem slika, a podvodno okruženje mijenja i okolnosti koje optičke kamere čine korisnima. Nije rijetko da zbog djelovanja morskih struja refleksija valova i ostalih različitih utjecaja voda postaje zamućena, što rješavanje problema prigušenja svijetla na većim dubinama dodavanjem umjetnog izvora svijetla na vozilo čini nepraktičnim. Kao posljedica prisutnih zalutalih čestica, iako  znatno manjih od valjne duljine svjetla, učestalo se javlja skretanje ili raspršenje svjetlosnih zraka. Moguća alternativna opcija pri akviziciji slika jest FLS sonar, koji omogućava stvaranje dvodimenzionalnih slika morskoga dna zaobilazeći prije spomenute probleme, uz postavljanje novih izazova kojima se bavi ovaj diplomski rad. Konkretnije,rad će omogućiti prikaz postupaka kojima se prvenstveno nastoje obraditi akustične slike dobivene FLS uređajem, obaviti registracija između sekvencijalnih slika na način da se dobije relativna transformacija te naposljetku postupak njihovog spajanja u mozaik, kao i dodatna obrada dobivenog mozaika.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=16cm]{general_scheme.png}
+\caption{Mosaicing pipeline}
+\label{fig:Mosaicing-pipeline}
+\end{figure}
+
+
+\chapter{FLS}
+
+\section{Homografija }
+Dvodimenzionalni FLS, poznat i pod nazivom akustična kamera, relativno je nova kategorija sonara koja omogućava prikupljanje akustičnih slika vrlo visokom frekvencijom. Općenito, FLS sonari mogu se razlikovati po širini akustične zrake, frekvenciji prikupljanja slika i načinu na koji stvaraju akustične valovove. Međutim, ono što je karakteristično kod svih 2D FLS-a jest način na koji se podaci prikupljaju. Naime, sonar u svoje vidno područje određeno azimutom sonara $\Theta$ odašilje zvučni signal pod kutem depresije  $\Phi$, koji se na povratku uzorkuje kao funkcija dosega i kutnog pomaka. Tako uzorkovani podaci zatim stvaraju dvodimenzionalnu sliku okoline, ali na način na koji nije moguće razaznati pod kojim kutem elevacije se nalazi pronađena značajka predstavljena u polarnim koordinatama, uz to uzimajući u obzir princip na kojemu je napravljen senzor. Takva se slika zatim prebacuje u Kartezijev koordinatni sustav, što za posljedicu ima nejednoliku rezoluciju slike, jer se tako pojedini pikseli iz polarnog koordinatnog sustava preslikavaju u više raznih piksela, čiji broj ovisi o udaljenosti mapiranog piksela. 
+S obzirom na navedeni princip, trodimenzionalnu točku \textbf{P} sa svojim sfernim koordinata $(r,\Theta,\Phi)$ možemo transformirati u koordinate Kartezijevog koordinatnog sustava relacijom().
+
+$$\textbf{P} = \begin{bmatrix}
+X \\
+Y \\
+Z
+\end{bmatrix} = \begin{bmatrix}
+r cos(\Theta) cos(\Phi)\\
+r sin(\Theta) cos(\Phi) \\
+r sin(\Phi) 
+
+\end{bmatrix} $$
+
+Zatim se točka \textbf{P} projicira na točku \textbf{p} koja se nalazi na ravnini slike relacijom(), što pokazuje da je projekcija zapravo funkcija kuta elevacije $\Phi$.
+$$ \textbf{p}=\begin{bmatrix}
+X \\
+Y 
+\end{bmatrix} = \begin{bmatrix}
+r cos(\Theta) )\\
+r sin(\Theta) 
+
+\end{bmatrix} $$
+
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=12cm]{FLS_operation.png}
+\caption{Princip rada FLS sonara}
+\label{fig:Mosaicing-pipeline}
+\end{figure}
+\begin{figure}[htb]
+\centering
+\includegraphics[width=10cm]{FLS_operation2.png}
+\caption{Projekcija točke P na ravninu slike}
+\label{fig:Mosaicing-pipeline}
+\end{figure}
+\pagebreak
+Nadalje, kako bi se uspješno obavila registracija slike, potrebno je opisati odnos između koordinata točke \textbf{p} i \textbf{p'} koja prikazuje identičan sadržaj, ali na drugoj slici translatiran za pomak $\Delta tx$ i $\Delta ty$ te rotiran za $\Delta\Theta$. To se ostvaruje pomoću globalne afina homografije koja dvodimenzionalni pomak u ravnini opisuje  izrazom().
+
+$$ \textbf{p'}= \textbf{H p} = \begin{bmatrix}
+ cos(\Theta) && -sin(\Theta) && ty \\
+sin(\Theta) &&  cos(\Theta) && tx\\
+0 && 0 && 1
+\end{bmatrix} \textbf{p}$$
+
+Izraz predstavlja aproksimiranu verziju egzaktnog geometrijskog modela koja zanemaruje pomak po $z$ osi radi jednostavnosti izračuna jer su informacije koje dobivamo putem ovakve homografije dovoljno dobre za estimaciju pomaka između dviju slika. Korištenje upravo ovakve homografije omogućava nam činjenica što možemo pretpostaviti da je sadržaj na slici gotovo planaran, zbog samog načina na koji se se sonar koristi. Naime, uzorkujući s veće daljine s manjim kutem depresije postiže se dovoljno velika rezolucija slike s manjim brojem  smetnji koje mogu proizaći iz neželjenih refleksija zvučnih valova od obližnjih objekata blizu vidnog polja.
+\newpage
+\section{Nepovoljna svojstva FLS slika}
+\textbf{Nehomogena insonifikacija} - Jedna je od pojava koje neželjeno utječu na kvalitetu slika dobivenih sonarom. Akustični val koji senzor odašilje u okolinu  podložan je djelovanju prigušenja okoline. S ciljem umanjenja ovakvog učinka, sonari koriste vremenski varijabilno pojačanje kojim se, kada se snimaju udaljenije točke prostora, pojačava amplituda odaslanog vala kako bi u konačnici uzorkovana vrijednost bila jednakog intenziteta kod svih točaka unutar vidnog polja. Međutim, promijene li se naglo uvjeti tokom snimanja, primjerice brzom promjenom kuta, dolazi do situacije gdje se slike bitno razlikuju intenzitetom, što ujedno bitno otežava proces registracije akustičnih slika između sekvencijalnih slika.
+\\
+\begin{figure}[htb]
+\centering
+\includegraphics[width=15cm]{nehomogena_ins.png}
+\caption{Nehomogena insonifikacija}
+\label{fig:Nehomogena insonifikacija}
+\end{figure}
+Na lijevoj strani slike () imamo prisutnu nehomogenu insonifikaciju kao posljedicu promjene kuta snimanja, dok je s desne strane slike nehomogena insonifikacija rezultat preklapanja akustičnih zraka sonara različitog intenziteta.
+\\
+\textbf{Prisutnost šuma} - Zbog nepredvidljive konfiguracije okoline i samog načina na koji će se odaslani valovi odbijati, akustične su slike vrlo često podložne šumu. Različita strukutura i materijali koji se nalaze u prostoru uzrokuju refleksiju i prigušenje akustičnih valova u različitoj mjeri. Takvo kaotično gibanje akustičnih valova rezultira interferencijom na senzoru sonara i dosta manjim omjerom korisnih informacija i šuma naspram slika koje se dobivaju optičkim kamerama.
+\\
+\textbf{Promjene perspektive} - Prilikom gibanja sonara pri većim brzinama dolazi do pojave tzv. "crnih područja" unutar slika. Drugim riječima, brzom promjenom točke i kuta snimanja utječe se na pojavu sjene unutar slika, što može imati velik doprinos u kasnijoj krivoj registraciji slika jer time smanjuje korelaciju podataka između istih.
+\\
+\textbf{Relativno niska rezolucija akustičnih slika} - U odnosu na ostale vrste sonara, FLS pružaju veću rezoluciju slika, ali naspram onih dobivenih akustičnom kamerom rezolucija je i dalje mala. Takva relativno mala rezolucija jest posljedica fizičke ograničenosti sonara koji može imati samo određen broj ugrađenih akustičnih senzora.
+\section{ARIS Explorer 3000}
+\textbf{(Nastavak...)}
+%image preprocessing & mask
+\chapter{Registracija slike}
+\section{Obrada slika}
+%Još uvijek nedovoljan broj istraživanja u kontekstu registrac
+\textbf{Primjena maske} - Registracija slika proces je u kojemu se nastoje pronaći parametri transformacije koji omogućuju uspješno preslikavanje vrijednosti iz referetnog sustava jedne slike u drugu, no da bi se registracija mogla uspješno obaviti, slike u određenoj mjeri moraju sadržavati identične informacije. Također, prije izračuna vezanih za registraciju potrebno je provesti pred-obradu slika. Početni korak u obradi bila bi primjena maske, kojoj je cilj izmjeniti informacije na izvornoj slici na način da dobivenu sliku prvo pretvara u tzv. \textit{footprint}. Nadalje, taj footprint prvo erodiramo te zatim širimo kako bi se riješili naknadno nadodanih oznaka prilikom snimanja. Slijedi ponovna erozija maske kako bi na lokacijama erodiranih piksela omogućili glatki prijelaz primjenom Gaussovog filtra, odnosno konvolucijom maske i Gaussove jezgre veličine prozora $W$ i varijance $\delta$. Taj se postupak primjenjuje prvenstveno zbog činjenice da teorija fazne korelacije, koja će biti detaljno opisana u sljedećem potpoglavlju, daje idealne rezultate kada se primjenjuje na periodične signale i kontinuirane Fourierove transformacije. Kod diskretne Fourierove transformacije, koja se koristi u području obrade digitalnih slika, transformacija se vrši primjenom FFT algoritma kod kojega se kao rezultat naglih prijelaza između rubova slika pojavljuju nepoželjne frekvencijske komponente u spektru, što može promijeniti ishod izračuna matrice fazne korelacije u sljedećim iteracijama. Ta pojava se još naziva i \textit{spectral leakage}, a manifestira se kroz niz "lažnih šiljaka" u inverzu Fourierove transformacije matrice fazne korelacije, vrijednosti u razini maksimalne koje često za posljedicu daju krive informacije o translaciji i rotaciji između danih slika. 
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=15cm]{fls_obrada.png}
+\caption{Primjena masake: a) Izvorna slika b) Maska c) Konačni rezultat}
+\label{fig:Pred-obrada slika sonara}
+\end{figure}
+
+\textbf{CLAHE} - Sljedeći korak u obradi slika sonara podrazumjeva primjenu CLAHE (engl. \textit{contrast limited adaptive histogram equalization}) tehnike. CLAHE se temelji na AHE (engl. \textit{adaptive histogram equalization}) tehnici koja za razliku od uobičajenog izjednačavanja histograma računa više histograma na različitim dijelovima slike te nastoji redistribuirati razinu osvjetljenja, što dovodi do poboljšanja lokalnog kontrasta i definicije rubova na svim dijelovima slike, dok istovremeno smanjuje globalni kontrast slike. Kao latentna posljedica AHE tehnike javlja se pojačanje šuma u homogenim regijama slike. CLAHE je naprotiv varijanta adaptivnog izjednačavanja histograma u kojoj je pojačanje kontrasta ograničeno. Pojačanje kontrasta u blizini određenog piksela ovisi o nagibu prijenosne funkcije (vrijednosti histograma na lokaciji pojedinog piksela), odnosno nagibu CDF (engl. \textit{cumulative distribution function}). CLAHE regulira pojačanje na način da postavlja ograničenje na histogram s već unaprijed određenom vrijednošću prije računanja CDF-a. Ta vrijednost ograničenja ovisi o normalizaciji histograma, a samim time i o veličini susjedstva za koje se provodi izračun. U konačnici se vrijednosti redistribuiraju na način da se većina vrijednosti postavlja ispod predodređenog ograničenje, dok neke mogu završiti s vrijednošću koja je veća. U slučaju da je to neželjena pojava, postupak se može provoditi iterativno.
+\begin{figure}[htb]
+\centering
+\includegraphics[width=12cm]{CLAHE2.png}
+\caption{Princip CLAHE tehnike}
+\label{fig:Pred-obrada slika sonara}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[height=10cm]{CLAHE.png}
+\caption{Primijena CLAHE metode na sliku FLS}
+\label{fig:Pred-obrada slika sonara}
+\end{figure}
+\newpage
+\section{Registracija temeljena na Fourierovoj transformaciji}
+Fourierova transformacija, a generalno i analiza u frekvencijskoj domeni, vrlo su značajna područja kad je u pitanju obrada signala. Principi koji se na tome temelje koriste se u raznim područjima - od prepoznavanja obrazaca, kodiranja video sadržaja do registracije slika. Kod slika snimljenih optičkim kamerama se u većoj mjeri registracija vrši pomoću pronalaska značajki, s obzirom da su tako dobivene slike veće rezolucije te da je omjer korisnih informacija naspram šuma dosta manji nego li na slikama dobivenim FLS-om. Usprkos tomu, registraciju slika sonara i dalje je moguće obaviti pronalaskom značajki na slikama. Budući da se nerijetko događa da na tim slikama nema dovoljno izraženih značajki (pa slika poprima poprilično homogen izgled) ili da je šum suviše izražen na njima, značajke se teško mogu pronaći te izračuni registracije, odnosno matrica transformacije, između parova slika postaju pogrešni. Metodom fazne korelacije slika temeljenoj na Fourierovoj transformaciji možemo u određenoj mjeri zaobići ta ograničenja zahvaljujući visokoj teoretskoj točnosti, računalnoj efikasnosti koja je u dobroj mjeri rezultat FFT-a, (engl.\textit{Fast Fourier Transform}) algoritma za izračun diskretne Fourierove transformacije (svodi računalnu kompleksnost na $O(N\log N)$ gdje je $N$ veličina podataka), neosjetljivosti na frekvencijski ovisne smetnje i kontrast. Jedno od ključnih svojstava Fourierovih transformacija je svojstvo pomaka koje omogućuje da se pomak između dviju funkcija u frekvencijskoj domeni manifestira kao linearni pomak u fazi. Ako postoje dvije slike opisane sa $s_1(y,x)$ i $s_2(y,x)$, tada njihov pomak $(\Delta Y,\Delta X)$ u dvodimenzionalnom prostoru možemo opisati sljedećom relacijom;
+$$ s_1(y,x) = s_2(y-\Delta Y,x-\Delta X) $$
+Primjenom dvodimenzionalne Fourierove tranformacije, izraz poprima oblik;
+$$ S_1(v,u) = S_2(v,u) \exp^{-i(v \Delta Y + u \Delta X)} $$
+Iz izraza je vidljivo da je u fazi transformacije pohranjena informacija o pomaku između dviju slika, dok amplituda sadrži informaciju o intenzitetu pojedine frekvencije. Funkciju fazne korelacije između slika $s_1(y,x)$ i $s_2(y,x)$ sada je moguće izračunati inverznom Fourierovom transformacijom normaliziranog unakrsnog spektra snage $Q(v,u)$.
+
+$$ Fk = F^{-1}(Q(v,u)) = F^{-1} \Bigg \{\frac{S_1(v,u) S_2^*(v,u)}{\mid S_1(v,u) S_2^*(v,u) \mid} \Bigg \} $$
+
+Gdje je $S_2^*(v,u)$ kompleksna konjugacija Fourierove transformacije slike $s_2(y,x)$. Korištenjem normaliziranog unakrsnog spektra snage osigurava se da sve frekvencijske komponente transformacije imaju unitarnu amplitudu, dok su vrijednosti faze očuvane te samim time i fazna korelacije postaje robusnija u odnosu šum koji je gotovo uvijek prisutan u slikama sonara. Jedna od posljedica korištenja isključivo informacije faze je smanjena ovisnost o intenzitetu i sadržaju slike, što faznu korelaciju čini invarijantnom na globalne promjene u kontrastu i svjetlini. Nadalje, vrh fazne korelacije, koji nam služi za pronalazak pomaka između slika, postaje oštriji i pouzdaniji. Zahvaljujući činjenici da fazne razlike svake frekvencije doprinose jednako, što umanjuje utjecaj smetnji koje se nalaze na određenom ograničenom dijelu spektra, i dalje je osjetljiv na male vrijednosti omjera korisnog signala i šuma .U idealnome slučaju takav inverz Fourierove transformacije matrice fazne korelacije nalikovao bi na impuls Diracove funkcije. Koordinate tako pronađene maksimalne vrijednosti bi zapravo otkrivale iznos pomaka $\Delta Y \Delta X$ kojim bi trebalo translatirati jednu od zadanih slika. Zbog određene razine devijacije sadržaja dviju slika između kojih se radi registracija, razlika u svjetlini, promjeni kuta pod kojim se uzimala slika, može doći do pojave "lažnih" dominantnih vrijednosti koje pri daljnjim izračunima ne daju prave parametre transformacije.
+\begin{figure}[htb]
+\centering
+\includegraphics[width=15cm]{spectralL.jpg}
+\caption{a) Optimalan izgled matrice fazne korelacije b) Matrica fazne korelacije uz spectral leakage}
+\label{fig:}
+\end{figure}
+  Kako bi se smanjio utjecaj takvih dominantih vrijednosti u registraciji slike, potrebno je filtrirati matricu fazne korelacije i dobiti što pouzdaniji dominantni vrh. Razlog zbog kojeg se filtriranje ne provodi na slikama nakon Fourierove transformacije, već na matrici fazne korelacije je utjecaj filtera na fazne komponente slike, čime bi se mogla u potpunosti izmjeniti informacija o translacijskim i rotacijskim parametrima između slika. Također filtriranje u frekvencijeskoj domeni se provodi dosta brže nego kovolucija u prostornoj domeni. Filter je potrebno odabrati oprezno kako bi se nakon filtracije zadržale niže frekvencijske komponente koje su karakeristične za pjeskovito dno i vegetaciju te visokofrekvencijske komponente koje odlikuju stijene i općenito objekte morskog dna za izraženim rubovima. Ipak komponente koje imaju veći utjecaj na neželjene razultate su visokofrekvencijske, stoga je filtriranje potrebno provesti niskopropusnim filterom. Jedan od niskopropusnih filtera prikladih za filtriranje matrice fazne korelacije jest Butterworthov filter dan izrazom:
+  
+$$ B_f(v,u) = \frac{1}{1+( \frac{r}{fc} )^2}, v=1,2,...,M-1,u=1,2,...,N-1 $$
+
+gdje je  $k$ red filtera, $f_c$ presječna frekvencija u rasponu od $[0 ,0.5]$, $r$ radijus frekvencije u normaliziranim koordinatama $ m =\frac{(v-\frac{M}{2})}{M}$ i $ n =\frac{(u-\frac{N}{2})}{N}$ u rasponu od $[-0.5, 0.5]$. Dalje preostaje odrediti presječnu frekvenciju $f_c$ kojom će se minimizirati djelovanje neželjenih frekvencijskih komponenti na matricu unakrsne fazne korelacije. Vrijednost optimalne presječne frekvencije moguće je odrediti maksimiziranjem izraza:
+ $$\gamma =\frac{max(Q(v,u))_{v=1...M,u=1....N}-\mu}{\sigma}$$
+ gdje je $Q(v,u)$ matrica fazne korelacije,$\mu$ srednja vrijednost članova matrice $Q(v,u)$, a $\sigma$ standardna devijacija. Optimizacija postavljenog problema se može riješiti korištenjem algoritma gradijentnog spusta. Gradijentni spust je iterativni optimizacijski algoritam prvog reda koji služi za pronalazak lokalnog minimuma funkcije. Koncipiran je na način da se u iterativnim koracima spušta suprotno od gradijenta funkcije, s obzirom da je je to najbrže padajući put, sve dok ne dosegne lokalni minimum. 
+ $$ \omega \leftarrow (0,0...0)$$
+  $$ \textrm{Ponavljaj do konvergencije} $$   
+ $$\omega \leftarrow \omega - \eta \nabla \bigg (\frac{1}{\gamma}(f_c) \bigg )$$             
+ gdje je $\eta $ vrijednost koja kroz iteracije teži nuli i uvjetuje konvergenciji algoritma.
+
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=10cm]{grad.png}
+\caption{1D gradijenti spust}
+\label{fig:Pred-obrada slika sonara}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=8cm]{C.png}	
+		\caption{Idealna matrica korelacije fazne razlike}
+		\label{fig:Idealna matrica korelacije fazne razlike}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=8cm]{C2.png}
+		\caption{Matrica korelacije fazne razlike uz prisutne smetnje}
+		\label{fig:matrica korelacije fazne razlike uz prisutne smetnje}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+ \includegraphics[width=8cm]{C3.png}
+		\caption{Butterworthov filter primjenjen na matricu fazne korelacije}
+		\label{fig:Butterworthov filter primjenjen na matricu fazne korelacije}
+\label{fig:}
+\end{figure}
+Vrlo često je putanja podvodnih vozila koja koriste sonar četvrtasta, što se  ponajviše događa zbog potencijalne preciznije estimacije transformacije, ali i zbog jednostavnijeg proračuna trajektorija. U mnogim situacijama podvodni reljef ne dopušta takav oblik putanja ili kinematika vozila nije za to konfigurirana zbog manjka stupnjeva slobode. Stoga da bi registracija mogla u potpunosti biti uspješna, uz parametre translacije potrebno je odrediti i parametre rotacije.
+Ako izraz za rotaciju slika $s1(y,x)$ i $s2(y,x)$ proširimo na rotaciju, on tada poprima oblik:
+
+$$ s_1(y,x) = s_2(y cos(\Theta)-x sin(\Theta)-\Delta Y,x cos(\theta)+y sin(\Theta)-\Delta X) $$
+
+Transformacijom u polarne koordinate, izraz poprima oblik;
+
+$$ S_1(\Theta,r) = S_2(\Theta,r) \exp^{-i(v \Delta Y + u \Delta X)} $$
+
+
+gdje je $\Theta$ parametar rotacije koji je potrebno najprije pronaći pa primjeniti kako bi se u sljedećoj iteraciji mogli pronaći $\Delta Y$ i $\Delta X$ parametri translacije. Pronalazak preciznog parametra rotacije je od krucijalne važnosti, s obzirom da preciznost $\Delta Y$ i $\Delta X$ kasnije ovisi o tome. Brojne metode kojima se vrši estimacija parametara transformacije koriste transformaciju Fourierovovog spektra iz kartezijevih koordinata u polarne što je numerički dosta osjetljivo. Iz tog razloga direktna polarna estimacija, kojom će se raditi procjena parametra, to čini izravno na podacima sa sonara. Ovaj princip  dopušta samo grubu procjenu parametra rotacije jer kada se polarne koordinate izravno koriste nije moguće razdvojiti utjecaj pomaka rotacije na translaciju (Pomaci u Kartezijevom koodrdinatnom sustavu, uzrokuju distorzije u polarnim koordinatama). Relativno visoka frekvencija prikupljanja akustičnih slika FLS-a ispunjava zahtjev da sekvencijalne slike imaju vrlo mali pomak u odnosu na veličinu slike, tada su distorzije u polarnim koordinatama relativno male. Najveći nedostatak kod ove metode jest kada postoji veliki pomak između susjednih slika pa gotovo sigurno nastupa greška u estimaciji. Kako bi se to izbjeglo, uvode se ograničenja koja nalažu kako se susjedne slike moraju preklapati barem u polovici vidnog polja sonara. 
+\begin{figure}[htb]
+\centering
+\includegraphics[width=9cm]{flsUspjesanMozaik.png}
+		\caption{Uspješna registracija dviju akustičnih slika FLS-a}
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+\section{Registracija pomoću značajki slika}
+Metode estimacije parametara registracije slika temeljene na pronalasku značajki slika su najčešće korištene metode u području računalnog vida. Njihov princip počiva na pronalasku podudarnosti između određenih točaka, odnosno lokaliziranih regija (značajki) slike, koje su relevantne za svoje  okruženje. Takve regije se sastoje od skupa točaka koje mogu sačinjavati rub (engl. \textit{edge}) slike (predstavlja granicu između dviju drugih regija) proizvoljnog oblika, karakteristično velikih amplituda gradijenta pomoću kojih određeni algoritmi detekcije kasnijim ulančavanjem formiraju detaljan opis značajke. Slična vrsta značajki su tzv. kutevi ili interesne točke (engl. \textit{corners}) koje su nastale prilikom istraživanja detekcije rubova, odlikuje ih velika amplituda gradijenta u svim smjerovim, a vrlo često su uzrokovani prisustvom manjeg broja točaka čija je amplituda znatno veća od amplitude ostalih piksela u regiji. Značajke također mogu biti prisutne i u obliku mrlja (engl. \textit{blobs}) koje, poput kuteva, amplitudom odskaču od okoline, ali se sastoje od puno većeg broja točaka te pomažu detektirati područja previša glatka da bi se detektirala interesnim točkama ili u obliku tzv. grebena (engl. \textit{ridges}) koje karakterizira vrlo izduženi oblik, te idealno imaju oblik jednodimenzionalne krivulje koja predstavlja os simetrije sadržaja slike. Takav oblik značajke poput grebena je puno teže detektirati većinom algoritama, ali je svjedno nerijetko zastupljen u aplikacijama koje se bave detekcijom struktura u automobilskom ili zračnom prometu te obradom slika krvožilnog sustava. Nakon detekcije značajki, nastupa proces opisivanja (engl. \textit{description}) kojim se stvaraju kompaktni opisi susjedstva značajki u obliku jednostavnih "prozora" piksela fiksne veličine ili kompleksnijih vektora koji sadržavaju opis gradijenta okolne teksture. Tome slijedi proces povezivanja (engl. \textit{matching}) točaka koje se ponavljaju u danim slikama, evaluacije danih parova na temelju sličosti te odbacivanja onih koje ne zadovoljavaju određeni kriterij koji ovisi o odabranoj metodi. 
+\subsection{SURF}
+Kako bi se registracija mogla obaviti što efikasnije, potrebno je odabrati pogodan algoritam detekcije i opisivanja značajki. Trenutno u široj upotrebi nalazi se veći broj takvih algoritama te kao što nalaže \textit{No free launch theorem}, generalno ne postoji algoritam koji je najprikladniji za sve vrste zadataka, već je potrebno odabrati onaj koji se najbolje slaže sa zadanom problematikom. Razna komparativna istraživanja procjenjuju učinak algoritama na temelju rezultata u više kriterija, kao što su brzina, osjetljivost, okluzija, efikasnost, koja se mjeri na temelju broja, prvotno pronađenih značajki te kasnije, broju i vrsti pogreške koju su učinili prilikom klasifikacije tijekom testiranja na skupovima slika sa različitim svojstvima. Radi invarijantnosti na skaliranje i rotaciju, kratkog vremene izvedbe te poprilično učinovitog djelovanja algoritma u radu sa mutnim slikama te slikama u kojima je prisutno promjenjivo osvjetljenje, što je nerijetko slučaj kod slika sonara, odabran je \textbf{SURF} (engl. \textit{Speeded up robust features}) algoritam.
+
+
+% SURF feature matching
+%
+\chapter{Poravnanje slika}
+
+\chapter{Mozaik}
+
+\chapter{Rezultati}
+\chapter{Zaključak}
+Zaključak.
+
+\bibliography{literatura}
+\bibliographystyle{fer}
+
+\begin{sazetak}
+Ovaj rad bavio se načinom generiranja mozaika kroz više etapa. U prvoj etapi radilo se o registraciji slike, a napravljena je i usporedba više različitih načina temeljenih na pronalasku značajki te na faznoj korelaciji Fourierove transformacije. Navedene su njihove mane, prednosti i okolnosti u kojima je njihov princip optimalan. Kako bi registracija mogla biti obavljena uspješno, opisane su razne metode kojima se može obaviti obrada slika, kako bi se, primjerice kod CLAHE metode, uspio postići veći lokalni te naposljetku manji globalni konrast. Također, opisana je metoda konstrukcije i primjene maske kojom se umanjuju neželjena svojstva FLS akustičnih slika. Nakon registracije slijedilo je poravnanje svih snimljenih slika pomoću grafa temeljenog na poziciji. U konačnosti, kada su obavljeni svi prethodno potrebni postupci, opisivao se postupak stvaranja mozaika i metode kojom se postiže blaži prijelaz između susjednih slika.
+
+\kljucnerijeci{FLS,Registracija slike,Mozaik,Poravnanje slika,Graf temeljen na poziciji}
+\end{sazetak}
+
+\newpage
+\engtitle{Generating and displaying a model of a seabed by fusing telemetry data with a data gathered by a multibeam sonar}
+\begin{abstract}
+The main subject of this thesis was a mosaic generation, explained through various stages. First stage explained the concepts of image registration, comparison has been made between a few different methods based on finding the image features and Fourier based phase correlation method. Their flaws and traits have been pointed out, as well as the circumstances which make their use optimal. In order to make image registration successful, various methods of image processing have been described. For example, CLAHE algorithm which is used to make locally larger, but in the end globally smaller image contrast. Mask construction method used for removing unwanted FLS image properties was also mentioned as an important part of image processing. After image processing, global image alignment based on Pose graph was described.In the end, when all the other aforementioned procedures have been applied, creation of  image mosaic has been explained, along with the methods used to blend neighboring images.
+
+
+
+\keywords{FLS,Image registration,Mosaic,Image alignment,Pose based graph}
+\end{abstract}
+
+\end{document}

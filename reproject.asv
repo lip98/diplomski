@@ -1,0 +1,40 @@
+function XYZ = reproject(depth, scale, fx, fy, cx, cy)
+% REPROJECT Reproject depth values to 3D coordinates using camera
+% intrinsic parameters
+%   
+% Inputs:
+%   depth  : depth map image 
+%   scale  : depth scaling factor
+%   fx, fy : focal lengths
+%   cx, cy : principal point
+
+    fx = 481.2;
+    fy=480.0;
+    cx = 319.5;
+    cy=239.5
+    XYZ = zeros([size(depth), 3]);
+    % convert depth values to real numbers
+    depth = double(depth);
+    sc_depth=depth/scale;
+    % create the X, Y and Z arrays of the same size as the input image
+    X = zeros(size(depth));
+    Y = zeros(size(depth));
+    
+    % Z coordinate is read directly from the depth image by scaling it
+    Z = depth / scale;
+    
+    % =[ your code starts here ]===========================================
+    XYZ(:,:,1) = sc_depth .* (x_vals - cx) ./ fx;    
+    XYZ(:,:,3) = -1 * (sc_depth .* (y_vals - cy) ./ fy);
+    XYZ(:,:,2) = sc_depth;
+    
+    
+    % =[ your code ends here ]=============================================
+    
+    % create the resulting MxNx3 matrix storing the XYZ coordinates for
+    % every point
+    XYZ = X;
+    XYZ(:,:,2) = Y;
+    XYZ(:,:,3) = Z;
+end
+

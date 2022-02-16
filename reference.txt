@@ -1,0 +1,45 @@
+file:///C:/Users/luka/AppData/Local/Temp/A_Correlation-Based_Approach_to_Calculate_Rotation-1.pdf
+file:///C:/Users/luka/AppData/Local/Temp/JSTARS-Registration.pdf
+https://www.researchgate.net/publication/6954494_A_Correlation-Based_Approach_to_Calculate_Rotation_and_Translation_of_Moving_Cells/link/5428a8250cf238c6ea7cd894/download
+file:///C:/Users/luka/AppData/Local/Temp/A_Correlation-Based_Approach_to_Calculate_Rotation-2.pdf
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6679575/
+file:///C:/Users/luka/AppData/Local/Temp/2016_IMAGE%20MOSAICING%20USING%20PHASE%20CORRELATION%20AND%20FEATURE%20BASED%20APPROACH.pdf
+file:///C:/Users/luka/AppData/Local/Temp/Gu-2006-Oceans.pdf
+https://sites.google.com/site/computervisionadinastoica/project-2-image-mosaicing-workflow
+https://www.researchgate.net/publication/241886367_Optimization_based_image_registration_in_the_presence_of_moving_objects
+https://www.researchgate.net/publication/6954494_A_Correlation-Based_Approach_to_Calculate_Rotation_and_Translation_of_Moving_Cells
+https://www.sciencedirect.com/science/article/pii/S1110016821003458
+https://www.researchgate.net/publication/258567769_An_Efficient_Implementation_of_Normalized_Cross-Correlation_Image_Matching_based_on_Pyramid
+https://www.researchgate.net/publication/316638576_An_image_registration_algorithm_based_on_phase_correlation_and_the_classical_Lucas-Kanade_technique/link/5af1f5070f7e9ba36645daef/download
+https://www.researchgate.net/figure/Region-for-estimating-the-peak-to-sidelobe-ratio-PSR-12_fig2_254864777
+https://www.researchgate.net/publication/220183132_On_the_Advantages_of_Polar_and_Log-Polar_Mapping_for_Direct_Estimation_of_Time-To-Impact_from_Optical_Flow
+Moguce optimizacije;
+Particle Swarm Optimization
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6679575/
+https://www.researchgate.net/publication/231575337_A_tutorial_on_graph-based_SLAM ??
+Matching Underwater Sonar Images by the Learned
+Descriptor Based on Style Transfer Method
+Learning local feature descriptors with
+triplets and shallow convolutional neural
+networks
+https://godatadriven.com/blog/how-to-style-transfer-your-own-images/
+
+Genetski algoritmi - knapsack algoritam za pose based graph ?
+
+
+snimit rezultate
+
+https://sthoduka.github.io/imreg_fmt/
+
+napravit pipeline
+popravit blending
+popravit image registration - Fourier based
+\\  
+prepravit homografiju
+Fourier-Melin 
+registration estimator
+blending
+
+Harris corners+ransac
+000000
+cnn deep feature extraction
