@@ -25,8 +25,8 @@ Tijekom proteklog desetljeća znatno se povećao intenzitet istraživanja u podr
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=16cm]{general_scheme.png}
-\caption{Mosaicing pipeline}
+\includegraphics[width=16cm]{shema.png}
+\caption{Lanac obrade mozaika}
 \label{fig:Mosaicing-pipeline}
 \end{figure}
 
@@ -203,14 +203,97 @@ gdje je $\Theta$ parametar rotacije koji je potrebno najprije pronaći pa primje
 		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
 \end{figure}
 \section{Registracija pomoću značajki slika}
-Metode estimacije parametara registracije slika temeljene na pronalasku značajki slika su najčešće korištene metode u području računalnog vida. Njihov princip počiva na pronalasku podudarnosti između određenih točaka, odnosno lokaliziranih regija (značajki) slike, koje su relevantne za svoje  okruženje. Takve regije se sastoje od skupa točaka koje mogu sačinjavati rub (engl. \textit{edge}) slike (predstavlja granicu između dviju drugih regija) proizvoljnog oblika, karakteristično velikih amplituda gradijenta pomoću kojih određeni algoritmi detekcije kasnijim ulančavanjem formiraju detaljan opis značajke. Slična vrsta značajki su tzv. kutevi ili interesne točke (engl. \textit{corners}) koje su nastale prilikom istraživanja detekcije rubova, odlikuje ih velika amplituda gradijenta u svim smjerovim, a vrlo često su uzrokovani prisustvom manjeg broja točaka čija je amplituda znatno veća od amplitude ostalih piksela u regiji. Značajke također mogu biti prisutne i u obliku mrlja (engl. \textit{blobs}) koje, poput kuteva, amplitudom odskaču od okoline, ali se sastoje od puno većeg broja točaka te pomažu detektirati područja previša glatka da bi se detektirala interesnim točkama ili u obliku tzv. grebena (engl. \textit{ridges}) koje karakterizira vrlo izduženi oblik, te idealno imaju oblik jednodimenzionalne krivulje koja predstavlja os simetrije sadržaja slike. Takav oblik značajke poput grebena je puno teže detektirati većinom algoritama, ali je svjedno nerijetko zastupljen u aplikacijama koje se bave detekcijom struktura u automobilskom ili zračnom prometu te obradom slika krvožilnog sustava. Nakon detekcije značajki, nastupa proces opisivanja (engl. \textit{description}) kojim se stvaraju kompaktni opisi susjedstva značajki u obliku jednostavnih "prozora" piksela fiksne veličine ili kompleksnijih vektora koji sadržavaju opis gradijenta okolne teksture. Tome slijedi proces povezivanja (engl. \textit{matching}) točaka koje se ponavljaju u danim slikama, evaluacije danih parova na temelju sličosti te odbacivanja onih koje ne zadovoljavaju određeni kriterij koji ovisi o odabranoj metodi. 
+Metode estimacije parametara registracije slika temeljene na pronalasku značajki slika su najčešće korištene metode u području računalnog vida. Njihov princip počiva na pronalasku podudarnosti između određenih točaka, odnosno lokaliziranih regija (značajki) slike, koje su relevantne za svoje  okruženje. Takve regije se sastoje od skupa točaka koje mogu sačinjavati rub (engl. \textit{edge}) slike (predstavlja granicu između dviju drugih regija) proizvoljnog oblika, karakteristično velikih amplituda gradijenta pomoću kojih određeni algoritmi detekcije kasnijim ulančavanjem formiraju detaljan opis značajke. Slična vrsta značajki su tzv. kutevi ili interesne točke (engl. \textit{corners}) koje su nastale prilikom istraživanja detekcije rubova, odlikuje ih velika amplituda gradijenta u svim smjerovim, a vrlo često su uzrokovani prisustvom manjeg broja točaka čija je amplituda znatno veća od amplitude ostalih piksela u regiji. Značajke također mogu biti prisutne i u obliku mrlja (engl. \textit{blobs}) koje, poput kuteva, amplitudom odskaču od okoline, ali se sastoje od puno većeg broja točaka te pomažu detektirati područja previša glatka da bi se detektirala interesnim točkama ili u obliku tzv. grebena (engl. \textit{ridges}) koje karakterizira vrlo izduženi oblik, te idealno imaju oblik jednodimenzionalne krivulje koja predstavlja os simetrije sadržaja slike. Takav oblik značajke poput grebena je puno teže detektirati većinom algoritama, ali je svejedno vrlo često zastupljen u aplikacijama koje se bave detekcijom struktura u automobilskom ili zračnom prometu te obradom slika krvožilnog sustava. Nakon detekcije značajki, nastupa proces opisivanja (engl. \textit{description}) kojim se stvaraju kompaktni opisi susjedstva značajki u obliku jednostavnih "prozora" piksela fiksne veličine ili kompleksnijih vektora koji sadržavaju opis gradijenta okolne teksture. Tome slijedi proces povezivanja (engl. \textit{matching}) točaka koje se ponavljaju u danim slikama, evaluacije danih parova na temelju sličosti te odbacivanja onih koje ne zadovoljavaju određeni kriterij koji ovisi o odabranoj metodi. 
 \subsection{SURF}
-Kako bi se registracija mogla obaviti što efikasnije, potrebno je odabrati pogodan algoritam detekcije i opisivanja značajki. Trenutno u široj upotrebi nalazi se veći broj takvih algoritama te kao što nalaže \textit{No free launch theorem}, generalno ne postoji algoritam koji je najprikladniji za sve vrste zadataka, već je potrebno odabrati onaj koji se najbolje slaže sa zadanom problematikom. Razna komparativna istraživanja procjenjuju učinak algoritama na temelju rezultata u više kriterija, kao što su brzina, osjetljivost, okluzija, efikasnost, koja se mjeri na temelju broja, prvotno pronađenih značajki te kasnije, broju i vrsti pogreške koju su učinili prilikom klasifikacije tijekom testiranja na skupovima slika sa različitim svojstvima. Radi invarijantnosti na skaliranje i rotaciju, kratkog vremene izvedbe te poprilično učinovitog djelovanja algoritma u radu sa mutnim slikama te slikama u kojima je prisutno promjenjivo osvjetljenje, što je nerijetko slučaj kod slika sonara, odabran je \textbf{SURF} (engl. \textit{Speeded up robust features}) algoritam.
+Kako bi se registracija mogla obaviti što efikasnije, potrebno je odabrati pogodan algoritam detekcije i opisivanja značajki. Trenutno u široj upotrebi nalazi se veći broj takvih algoritama te kao što nalaže \textit{No free launch theorem}, generalno ne postoji algoritam koji je najprikladniji za sve vrste zadataka, već je potrebno odabrati onaj koji se najbolje slaže sa zadanom problematikom. Razna komparativna istraživanja procjenjuju učinak algoritama na temelju rezultata u više kriterija, kao što su brzina, osjetljivost, okluzija, efikasnost, koja se mjeri na temelju broja, prvotno pronađenih značajki te kasnije, broju i vrsti pogreške koju su učinili prilikom klasifikacije tijekom testiranja na skupovima slika sa različitim svojstvima. Radi invarijantnosti na skaliranje i rotaciju, kratkog vremena izvedbe te poprilično učinovitog djelovanja algoritma u radu sa mutnim slikama te slikama u kojima je prisutno promjenjivo osvjetljenje, što je nerijetko slučaj kod slika sonara, odabran je \textbf{SURF} (engl. \textit{Speeded up robust features}) algoritam. SURF koristi filtere kvadratnog oblika kako bi aproksimirao Gaussovo "zaglađivanje" što omogućuje brže izvođenje algoritma za razliku od srodnog SIFT (engl. \textit{Scale Invariant Feature Transform}) algoritma koji detektira karakteristične točke invarijantne na skaliranje upotrebom kaskadnih filtera uzastopnim računanjem razlika vrijednosti Gaussovog filtra nad skaliranim slikama. Filtriranje slike se provodi znatno brže ukoliko se koristi integral slike $s(y,x)$.
+$$ I_{SURF}(y,x)= \sum_{i=1}^{y} \sum_{j=1}^{x} I(y,x) $$
+Nadalje, SURF koristi detektor značajki tipa mrlja temeljen na Hessianovim matricama radi manje računalne složenosti te preciznosti. Determinanta Hessianove matrice se ne koristi samo kao mjera lokalne promjene u točkama u kojima postiže maksimalnu vrijednost, već i kao mjera za odabir veličine skaliranja. Hessianove matrica $H(y,x,\sigma)$ u točki slike $s(y,x)$ sa faktorom skaliranja $\sigma$ je definarana kao;
 
+$$ H(y,x) = \begin{vmatrix}
+L_{xx}(y,x, \sigma) & L_{xy}(y,x, \sigma)\\
+L_{yx}(y,x, \sigma) & L_{yy}(y,x, \sigma)
+\end{vmatrix}$$
 
-% SURF feature matching
-%
-\chapter{Poravnanje slika}
+gdje je $L_{xx}(y,x, \sigma)$ konvolucija druge derivacije Gaussovog filtra $ \frac{\partial ^2}{\partial x^2}g(\sigma)$ sa slikom $s$ u točki $(y,x)$, analogno i za ostale vrijednosti Hessianove matrice $L_{yx}(y,x, \sigma)$, $L_{xy}(y,x, \sigma)$ te $L_{yy}(y,x, \sigma)$.Prilikom pronalaska značajki se traže podudarnosti između slika sa različitim faktorom skaliranja na način da se primjenjuju kvadratni filteri različitih dimenzija te se naknadno uvećavaju, za razliku od ostalih algoritama koji koriste piramidalno skaliranje slike, gdje se dimenzije određene slike sekvencijalno smanjuju te se traže podudarnosti značajki. Faktor skaliranja za  i-tu iteraciju se računa relacijom;
+
+$$ \sigma{i} = \frac{\sigma_0 W{i} }{W_0}, W{i} = W{(i-1)}+6   $$
+
+\newpage
+\begin{figure}
+\includegraphics[width=15cm]{integralGauss.png}
+		\caption{a)Konvolucija slike sa drugom derivacijom Gaussovog filtra b) uz primjenu integrala slike}
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+
+gdje je $\sigma_0$ početni faktor skaliranja koji iznosi 1.2, $W_0$ je širina početnog filtera dimenzije $9 \times 9$, a $ W{i}$ širina i-tog filtra čije se dimenzije kroz svaku iteraciju povećavaju za cjelobrojnu vrijednost $6$. Maksimalne vrijednosti Hessianove matrice se zatim interpoliraju u prostoru skaliranja i slike.
+Nakon što se obavila detekcija značajki, potrebno ih je "opisati", to se nastoji obaviti opisom distribucije intenziteta piksela $(y,x)$ u susjedstvu značajke. Veliki utjecaj na učinak algoritma ima odabir dimenzije tzv. deskriptora, računalna složenost i preciznost povezivanja značajki na slikama direktno ovisi o veličini dimenzije. Odabirom manje dimenzije deskriptor postaje robusniji na varijacije u izgledu značajke, ali također postaje podložniji pogrešnoj klasifikaciji, dovodi do većeg broja pogrešno pozitivno klasificiranih primjera. Prvi korak u opisivanju značajki se sastoji pronalaska orijentacije na temelju kružne regije u području značajke te zatim konstrukcije kvadratne regije u smjeru te orijentacije iz koje se ekstrahira deskriptor. Kako bi se odredila orijentacija kojom bi SURF algoritam bio invarijantan na rotaciju, računaju se odzivi Haar-ovih "valića" (engl. \textit{Haar's wavelets}) u $y$ i $x$ smjeru unutar kružne regije radijusa $6 \sigma $. Pomoću dobivenih vrijednosti odziva estimira se dominantna orijentacija područja značajke zbrajanjem svih vrijednosti horizontalnih i vertikalnih odziva unutar "kliznog" prozora orijentacije veličine $\frac{\pi}{3}$. U sljedećem koraku se konstruira kvadratna regija u smjeru prije izračunate orijentacije dimenzija $20 \sigma \times 20\sigma$ koja se zatim dijeli u manje regije veličine $4 \times 4$ unutar kojih se računaju odzivi Haarovih "valića" čiji su horizontalni i vertikalni odzivi rotirani sukladno dominantnoj rotaciji izračunatoj u prethodnom korako te kako bi se povećala robusnost na deformacije i greške lokalizacije, dobiveni odzivi se množe sa težinskim vrijednostima Gaussijana $\sigma$ centriranog u značajki. Tako dobiveni odzivi $d_x$, $d_y$  sumiraju se po kasnije podijeljenim manjim regijama veličine $4 \times 4$,kao i njihove apsolutne vrijednosti $ \mid d_x \mid$, $ \mid d_y \mid$ kojima se dobiva informacija o promjeni intenziteta čine vektor značajke $ \textbf{v} = (\sum d_x,\sum d_y,\sum \mid d_x \mid,\sum \mid d_y \mid$). Dobiveni vektori sa različitih slika zatim uspoređuju, a one vrijednosti koje ne zadavoljavaju tražene kriterije se odbacuju.
+\begin{figure}
+\includegraphics[width=14cm]{haar.png}
+		\caption{Odziv Haar-ovih "valića" na: a) Homogenu sliku b) Nagle promjene u smjeru x osi c) Na monotono rastući intenzitet u x smjeru }
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+\begin{figure}
+\includegraphics[width=15cm]{matchedPointsSurf.png}
+		\caption{SURF algoritam primjenjen na slike sonara }
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+\subsection{Metoda transformacije stila slike pomoću neuronske konvolucijske mreže}
+Primjenjeni algoritam za detekciju značajki SURF, prilagođen je pronalasaku značajki slika snimljenih optičkim kamerama, stoga se u radu sa slikama sonara pri registraciji mogu pojaviti velika odstupanja. Naime pri većim promjenama osvjetljenja, kuta snimanja ili veće brzine gibanja prilikom snimanja dolazi do velikog odstupanja sadržaja akustičnih slika sonara koje su i u idealnim uvjetima podložne djelovanju šuma i oskudne značajkama. Kako bi se akustične slike sonara prilagodile postojećim algoritmima detekcije, kao jedno od mogućih rješenja primjenjuje se metoda transformacije stila kojom je cilj akustične slike sonara učiniti što sličnijima optičkim slikama,a da se pritom pokuša uravnotežiti maksimiziranje transparentnosti značajki slika i optimalno povezivanje tih značajki na parovima slika. Temeljni alat ove metode je neuronska konvolucijska mreža sa 19 slojeva, VGG 19, kojom se nastoji naći optimalni odnos između sadržaja i stila slike. Općenito, neuronske konvolucijske mreže su regularizirane verzije višeslojnog perceptrona, što podrazumjeva potpuno povezanu mrežu, na način da je svaki neuron iz jednog sloja, povezan sa svim neuronima iz susjednog sloja. Takav način povezanosti ih čini sklonima prenaučenosti što dovodi do loše generalizacije nad podacima. Kako bi se to spriječilo, kompleksne obrasce unutar hijerarhijskih stuktura slojeva kompenziraju jednostavnijim obrascima unutar filtera. Prije ulaska podataka slika, rijetko koriste pred-obradu podataka, već mreža uči optimizirati filtere ili jezgre kroz automatizirano učenje. Arhitektura takve mreže sastoji se od više slojeva sa različitim ulaznim i izlaznim volumenima. Ključni gradivni sloj mreže je konvolucijski sloj koji se sastoji od niza parametara filtera, čije se vrijednosti mijenjaju učenjem. Nad svakim od tih filtera se provodi konvolucija sa slikom duž ulaznih dimenzija stvarajući dvodimenzionalne aktivacijske mape filtera koje se slažu u dubinu. S obzirom da su ulazni podaci poput slika vrlo visokih dimenzija, povezivanje svih neurona u mreži bi bilo nepraktično, stoga se primjenjuju "rijetke mreže" kod kojih je broj povezanih neurona daleko manji od maksimalnog broja. Broj takvih veza određen relacijom;
+
+$$ \frac{W-K+2P}{S}+1 $$
+
+gdje je $W$ veličina ulaznog volumena, $K$ veličina jezgre konvolucijskog sloja neurona, $S$ korak (engl. \textit{Stride}) (čija veličina određuje kako su širina i dužina sloja alocirani, porastom vrijednosti model postaje "rjeđi") i $P$ ispuna (engl. \textit{Padding}) vrijednosti na granicama. Sljedeći bitan sloj u konvolucijskim mrežama je tzv. \textit{Pooling} koji korištenjem nelinearnih funkcija poput \textit{Max pooling} dijeli ulaznu sliku na pravokutne podskupove te od svakog podskupa uzima maksimalnu vrijednost te naposljetku prosljeđuje komprimiranu verziju slike. Primjenom ovog sloja se posljedično smanjuje broj parametara, količina memorije koja se upotrebljava, računalna složenost te se smanjuje stopa složenosti modela. \textit{Pooling} slojevi se često ubacuju periodično u strukturu neuronske mreže između konvolucijskih slojeva, često ispred aktivacijskih Re-Lu slojeva. Re-Lu slojevi (engl. \textit{Rectified linear unit}) primjenjuju nezasićenu aktivacijsku funkciju $ f(x) = max(0,x)$ nad ulaznim vrijedostima aktivacijske mape neurona postavljajući negativne vrijednosti na nulu. Re-Lu se preferira nad ostalim tipovima aktivacijskih funkcija jer omogućuje višestruko brže treniranje mreže bez prevelikog utjecaja na generalizaciju modela.\begin{figure}
+\centering
+\includegraphics[width=9cm]{maxpooling.png}
+		\caption{\textit{Max pooling} metoda }
+		\label{fig:Re-Lu aktivacijska funkcija}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=9cm]{relu.png}
+		\caption{Re-Lu aktivacijska funkcija }
+		\label{fig:Re-Lu aktivacijska funkcija}
+\end{figure}
+Pomoću posljednjeg sloja, potpuno povezanog sa prethodnim se vrši klasifikacija. Kada se pristupa raznim slojevima neuronske konvolucijeske mreže, viši slojevi općenito sadrže informacije o objektima i rasporedu u slici, dok niži slojevi prikazuju informacije na razini piksela slike, odnosno sadrže više detaljnih informacija originalne slike. Tada gubitak sadržaja na pojedinom sloju možemo izraziti relacijom;
+$$ L_{c}(\textbf{s},\textbf{g},l) = \frac{1}{2} \sum_{i=1}\sum_{j=1}(F{ij}^k-S{ij}^k)$$
+gdje je \textbf{s} matrica ulazne slike, \textbf{g} vektor generirane slike, a $F{ij}^l$ aktivacija i-tog filtra na poziciji j u k-tom sloju. Stilovi značajki se s druge strane može dobiti rješavanjem Gram-ove $ G^k$ matrice koja ovisi o vrijednosti $F{ij}^l$, a koriste se za opisivanje teksture slike.
+$$ G{ij}^k = \sum_{m}(F{im}^k-S{jm}^k)$$
+gdje $i$,$j$ označuju mapu značajki, dok $k$ predstavlja $k$-ti element mape značajki. Funkcija gubitka stila se definira izrazom;
+$$ L_{st}(\textbf{s},\textbf{g},l) =\sum_{l=0}^L \frac{1}{4 N_l^2 M_l^2} w_l\sum_{i,j}(S_{ij}^l-G{ij}^l)^2 $$
+gdje je gdje je \textbf{s} matrica ulazne slike, \textbf{g} vektor generirane slike, a $S^l$ i $G^l$ njihove matrice reprezentacije stila u sloju $l$, a $w$ težinski koeficjent koji je mjera važnosti određenog sloja. Konačan izraz za funkciju gubitka je tada;
+$$ L_{ukupno} = \alpha L_{c} + \beta L_{st} $$
+
+gdje su $\alpha$ i $\beta$ unaprijed određeni parametri kojim se određuje mjera u kojoj se želi promjeniti stil izvorne slike, odnosno očuvati originalni sadržaj. Iako se izračuni gubitaka računaju putem neuronske konvolucijske mreža koja nije učena na podacima sonara, daje zadovoljavajuće rezultate. Kao posljedica prijenosa stila sa slike bez previše izraženih značajki na sliku sonara, kroz više iteracija nastaje generirana sa manjim prisutvom šuma i transparentnijim značajkama. 
+
+\begin{figure}[tbh]
+\centering
+\includegraphics[height=8cm]{cnn2.png}
+		\caption{Struktura neuronske konvolucijske mreže }
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+\newpage
+\begin{figure}[tbh]
+\centering
+\includegraphics[width = 15cm]{cnn3.png}
+		\caption{a) Izvorna slika b) Generirana slika c) Primjer slike čiji je stil preuzet}
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+\begin{figure}[tbh]
+\centering
+\includegraphics[width = 15cm]{cnn4.png}
+		\caption{a) Izvorna slika b) Generirana slika c) Primjer slike čiji je stil preuzet}
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+\begin{figure}[!tbh]
+\centering
+\includegraphics[height = 6cm]{cnnmatch.png}
+		\caption{ Registracija slike nakon primjene metode transformacije stila}
+		\label{fig:Uspješna registracija dviju akustičnih slika FLS-a}
+\end{figure}
+Sa prikazane slike se može vidjeti kako se primjenom metode transformacije stila detektira manji broj značajki, ali su gotovo uvijek točno povezane što rezultira boljim parametrima transformacije pri registraciji slike.
+
+\chapter{Optimizacija grafa temeljenog na poziciji}
+Kako bi se generirao mozaik, potrebno je pronaći apsolutne koordinate i orijentacije slika unutar zajedničkog globalnog koordinatnog sustava. To se može obaviti sekvencijalnim učitavanjem slika i stapanjem u mozaik kroz svaku od iteracija ili računanjem parametara unaprijed te kasnijim stapanjem u mozaik. U svakom slučaju prilikom izračuna parametara transformacija može doći do određene stope pogreške. U prvom slučaju, generiranjem mozaika, odnosno stapanjem slika na mjestu preklapanja se može izgubiti dio informacije jedinstven i potreban za registraciju sa slikom u idućoj iteraciji. U drugom slučaju kada se prvo obavlja registracija između svih sekvencijalnih parova slika, a to vrijedi također i za prvi slučaj, može doći do netočne estimacije registracije zbog krive detekcije značajki na slikama. U tu svrhu se koristi algoritam optimizacije grafa temeljenog na poziciji  (engl. \textit{Pose based graph optimization}) kako bi ograničio kumulativnu grešku registracije prilikom generiranja mozaika.
 
 \chapter{Mozaik}
 
